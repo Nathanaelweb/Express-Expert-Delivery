@@ -1,0 +1,249 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel | Express Expert Delivery</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #0d47a1;
+      --secondary: #1976d2;
+      --accent: #ff9800;
+      --light: #f4f6fb;
+      --dark: #1a1a1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: var(--light);
+      color: var(--dark);
+    }
+
+    header {
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      color: #fff;
+      padding: 16px 8%;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .admin-wrapper {
+      padding: 40px 8%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 30px;
+      border-radius: 18px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+    }
+
+    .card h2 {
+      margin-bottom: 20px;
+      color: var(--primary);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--secondary);
+    }
+
+    .preview p { margin-bottom: 8px; }
+
+    footer {
+      background: #111;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 900px) {
+      .admin-wrapper { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>Express Expert Delivery – Admin Panel</header>
+
+<section class="admin-wrapper">
+
+  <!-- FORM -->
+  <div class="card">
+    <h2>Add / Update Package</h2>
+
+    <label>Tracking Code</label>
+    <input id="trackCode" placeholder="EED-2025-001" />
+
+    <label>Sender Name</label>
+    <input id="sender" placeholder="John Doe" />
+
+    <label>Receiver Name</label>
+    <input id="receiver" placeholder="Jane Smith" />
+
+    <label>Destination Country</label>
+    <input id="country" placeholder="U.S.A" />
+
+    <label>Package Weight (kg)</label>
+    <input id="weight" type="number" />
+
+    <label>Delivery Fee</label>
+    <input id="fee" type="number" />
+
+    <label>Status</label>
+    <select id="status">
+      <option>Processing</option>
+      <option>Picked Up</option>
+      <option>In Transit</option>
+      <option>Out for Delivery</option>
+      <option>Delivered</option>
+    </select>
+
+    <label>Current Location</label>
+    <input id="location" placeholder="Queen, U.S.A" />
+
+    <button onclick="savePackage()">Save Package</button>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="card">
+    <h2>Live Preview</h2>
+    <p><strong>Tracking:</strong> <span id="pTrack">-</span></p>
+    <p><strong>Sender:</strong> <span id="pSender">-</span></p>
+    <p><strong>Receiver:</strong> <span id="pReceiver">-</span></p>
+    <p><strong>Country:</strong> <span id="pCountry">-</span></p>
+    <p><strong>Weight:</strong> <span id="pWeight">-</span> kg</p>
+    <p><strong>Fee:</strong> ₦<span id="pFee">-</span></p>
+    <p><strong>Status:</strong> <span id="pStatus">-</span></p>
+    <p><strong>Location:</strong> <span id="pLocation">-</span></p>
+    <p id="msg"></p>
+  </div>
+
+</section>
+
+<footer>© 2025 Express Expert Delivery Company</footer>
+
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDsadz8GfNMOGaoHbzi7vB2LyvGb-ESxqs",
+      authDomain: "musicdatabase-c57f8.firebaseapp.com",
+      databaseURL: "https://musicdatabase-c57f8-default-rtdb.firebaseio.com",
+      projectId: "musicdatabase-c57f8",
+      storageBucket: "musicdatabase-c57f8.firebasestorage.app",
+      messagingSenderId: "1081533752772",
+      appId: "1:1081533752772:web:4e43c649e7e0bd7435f091",
+      measurementId: "G-G9J9P224ZH"
+    };
+  
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+  
+    function savePackage() {
+      // Select inputs from the DOM
+      const trackCode = document.getElementById('trackCode');
+      const sender = document.getElementById('sender');
+      const receiver = document.getElementById('receiver');
+      const country = document.getElementById('country');
+      const weight = document.getElementById('weight');
+      const fee = document.getElementById('fee');
+      const status = document.getElementById('status');
+      const location = document.getElementById('location');
+  
+      const msg = document.getElementById('msg');
+      const pTrack = document.getElementById('pTrack');
+      const pSender = document.getElementById('pSender');
+      const pReceiver = document.getElementById('pReceiver');
+      const pCountry = document.getElementById('pCountry');
+      const pWeight = document.getElementById('pWeight');
+      const pFee = document.getElementById('pFee');
+      const pStatus = document.getElementById('pStatus');
+      const pLocation = document.getElementById('pLocation');
+  
+      if (!trackCode.value) {
+        msg.textContent = 'Enter a tracking code!';
+        msg.style.color = 'red';
+        return;
+      }
+  
+      const data = {
+        sender: sender.value,
+        receiver: receiver.value,
+        country: country.value,
+        weight: weight.value,
+        fee: fee.value,
+        status: status.value,
+        location: location.value,
+        updated: new Date().toISOString()
+      };
+  
+      // Save to Firebase
+      db.ref('packages/' + trackCode.value).set(data)
+        .then(() => {
+          // Update display
+          pTrack.textContent = trackCode.value;
+          pSender.textContent = data.sender;
+          pReceiver.textContent = data.receiver;
+          pCountry.textContent = data.country;
+          pWeight.textContent = data.weight;
+          pFee.textContent = data.fee;
+          pStatus.textContent = data.status;
+          pLocation.textContent = data.location;
+  
+          msg.textContent = 'Package saved successfully ✔';
+          msg.style.color = 'green';
+        })
+        .catch((error) => {
+          msg.textContent = 'Error saving package: ' + error;
+          msg.style.color = 'red';
+        });
+    }
+  </script>
+  
+
+</body>
+</html>
+```

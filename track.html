@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Track Package | Express Expert Delivery</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    body { font-family: Poppins, sans-serif;  margin:0; 
+        background: linear-gradient(rgba(197, 223, 248, 0.8), rgba(183, 201, 228, 0.8)),
+        url('Freight-forwarder.jpeg') center/cover;
+    }
+    header { background:#0d47a1; color:#fff; padding:16px 8%; font-weight:700; }
+    .wrapper { display:flex; justify-content:center; padding:60px 20px; }
+    .card { background:#fff; max-width:520px; width:100%; padding:40px; border-radius:18px; box-shadow:0 15px 40px rgba(0,0,0,.12); }
+    h2 { color:#0d47a1; text-align:center; }
+    input,button { width:100%; padding:14px; margin-top:15px; border-radius:10px; }
+    button { background:#0d47a1; color:#fff; border:none; font-weight:600; cursor:pointer; }
+    #result { margin-top:20px; }
+    #map { height:300px; margin-top:20px; border-radius:14px; display:none; }
+    header .logo {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+
+    nav a:hover {
+      color:yellow;
+    }
+    .tor {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      font-size: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 34px; }
+      .tracking input { width: 100%; margin-bottom: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>Express Expert Delivery – Track Package
+    <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="track.html">Track Package</a></li>
+    
+          
+        </ul>
+      </nav>
+</header>
+
+<div class="wrapper">
+  <div class="card">
+    <h2>Track Your Shipment</h2>
+    <input id="code" placeholder="Enter Tracking Code" />
+    <button onclick="track()">Track</button>
+
+    <div id="result"></div>
+    <div id="map"></div>
+  </div>
+</div>
+<div id="google_translate_element" class="tor"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  // 🔥 FIREBASE CONFIG (USE SAME AS ADMIN PANEL)
+  const firebaseConfig = {
+  apiKey: "AIzaSyDsadz8GfNMOGaoHbzi7vB2LyvGb-ESxqs",
+  authDomain: "musicdatabase-c57f8.firebaseapp.com",
+  databaseURL: "https://musicdatabase-c57f8-default-rtdb.firebaseio.com",
+  projectId: "musicdatabase-c57f8",
+  storageBucket: "musicdatabase-c57f8.firebasestorage.app",
+  messagingSenderId: "1081533752772",
+  appId: "1:1081533752772:web:4e43c649e7e0bd7435f091",
+  measurementId: "G-G9J9P224ZH"
+};
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  function track() {
+    const code = document.getElementById('code').value.trim();
+    const result = document.getElementById('result');
+    const mapBox = document.getElementById('map');
+
+    if (!code) {
+      result.innerHTML = '<p style="color:red">Enter a tracking code</p>';
+      return;
+    }
+
+    db.ref('packages/' + code).once('value').then(snapshot => {
+      if (!snapshot.exists()) {
+        result.innerHTML = '<p style="color:red">Tracking code not found</p>';
+        mapBox.style.display = 'none';
+        return;
+      }
+
+      const d = snapshot.val();
+      result.innerHTML = `
+        <p><strong>Status:</strong> ${d.status}</p>
+        <p><strong>Sender:</strong> ${d.sender}</p>
+        <p><strong>Receiver:</strong> ${d.receiver}</p>
+        <p><strong>Country:</strong> ${d.country}</p>
+        <p><strong>Weight:</strong> ${d.weight} kg</p>
+        <p><strong>Fee:</strong> $${d.fee}</p>
+        <p><strong>Location:</strong> ${d.location}</p>
+      `;
+
+      // Show map (demo coordinates)
+     // Show map (USA example - New York City)
+mapBox.style.display = 'block';
+mapBox.innerHTML = '';
+const map = L.map('map').setView([40.7128, -74.0060], 5); // Centered on USA
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+L.marker([40.7128, -74.0060]).addTo(map)
+  .bindPopup(d.location)
+  .openPopup();
+
+    });
+  }
+</script>
+<div id="google_translate_element" class="tor"></div>
+
+<script>
+  
+
+
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+  }
+</script>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+</body>
+</html>
+```
