@@ -65,6 +65,21 @@
       .hero h1 { font-size: 34px; }
       .tracking input { width: 100%; margin-bottom: 10px; }
     }
+    #receiptBtn {
+  margin-top: 15px;
+  padding: 12px 18px;
+  background: #0d47a1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#receiptBtn:hover {
+  background: #08306b;
+}
+
   </style>
 </head>
 <body>
@@ -128,14 +143,24 @@
 
       const d = snapshot.val();
       result.innerHTML = `
-        <p><strong>Status:</strong> ${d.status}</p>
-        <p><strong>Sender:</strong> ${d.sender}</p>
-        <p><strong>Receiver:</strong> ${d.receiver}</p>
-        <p><strong>Country:</strong> ${d.country}</p>
-        <p><strong>Weight:</strong> ${d.weight} kg</p>
-        <p><strong>Fee:</strong> $${d.fee}</p>
-        <p><strong>Location:</strong> ${d.location}</p>
-      `;
+  <div id="receipt">
+    <h3>📦 Shipment Receipt</h3>
+    <p><strong>Tracking Code:</strong> ${code}</p>
+    <p><strong>Status:</strong> ${d.status}</p>
+    <p><strong>Sender:</strong> ${d.sender}</p>
+    <p><strong>Receiver:</strong> ${d.receiver}</p>
+    <p><strong>Country:</strong> ${d.country}</p>
+    <p><strong>Weight:</strong> ${d.weight} kg</p>
+    <p><strong>Delivery Fee:</strong> $${d.fee}</p>
+    <p><strong>Location:</strong> ${d.location}</p>
+    <p><strong>Last Updated:</strong> ${d.updated || 'N/A'}</p>
+  </div>
+
+  <button id="receiptBtn" onclick="printReceipt()">Generate Receipt</button>
+`;
+
+
+
 
       // Show map (demo coordinates)
      // Show map (USA example - New York City)
@@ -159,9 +184,46 @@ L.marker([40.7128, -74.0060]).addTo(map)
   function googleTranslateElementInit() {
     new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
   }
+
+  function printReceipt() {
+  const receiptDiv = document.getElementById('receipt');
+
+  if (!receiptDiv) {
+    alert('Receipt data not found');
+    return;
+  }
+
+  const receiptContent = receiptDiv.innerHTML;
+
+  const win = window.open('', '', 'width=800,height=600');
+  win.document.write(`
+    <html>
+    <head>
+      <title>Shipment Receipt</title>
+      <style>
+        body { font-family: Arial; padding: 30px; }
+        h3 { color: #0d47a1; }
+        p { margin: 6px 0; }
+      </style>
+    </head>
+    <body>
+      ${receiptContent}
+      <hr>
+      <p><strong>Express Expert Delivery Company</strong></p>
+      <p>Thank you for choosing us.</p>
+    </body>
+    </html>
+  `);
+
+  win.document.close();
+  win.focus();
+  win.print();
+}
+
 </script>
 <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 </body>
 </html>
 ```
+
