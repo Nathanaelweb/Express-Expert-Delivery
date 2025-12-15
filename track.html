@@ -166,11 +166,14 @@
      // Show map (USA example - New York City)
 mapBox.style.display = 'block';
 mapBox.innerHTML = '';
-const map = L.map('map').setView([40.7128, -74.0060], 5); // Centered on USA
+
+const map = L.map('map').setView([14.3194, -87.6840], 7); // La Paz, Honduras
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-L.marker([40.7128, -74.0060]).addTo(map)
+
+L.marker([14.3194, -87.6840]).addTo(map)
   .bindPopup(d.location)
   .openPopup();
+
 
     });
   }
@@ -226,4 +229,5 @@ L.marker([40.7128, -74.0060]).addTo(map)
 </body>
 </html>
 ```
+
 
